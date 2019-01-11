@@ -1,0 +1,136 @@
+#include <Adafruit_NeoPixel.h>
+
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+
+#define NUM_LEDS 1  // This many NeoPixels...
+#define LED_PIN  1 // are connected to this DIGITAL pin #
+#define lightSense 2  // Light sensor to this DIGITAL pin #
+
+#define MAXBRIGHTNESS 30
+#define MINBRIGHTNESS 0
+uint8_t modBrightness = 0;
+bool brightnessDir = false;
+
+Adafruit_NeoPixel pixel_1(NUM_LEDS, LED_PIN);
+
+unsigned long timer_1;
+unsigned long timer_2;
+unsigned long timer_3;
+unsigned long timer_4;
+
+uint16_t delay_1 = 50;
+uint16_t delay_2 = 100;
+uint16_t delay_3 = 10000;
+uint16_t delay_4 = 20000; 
+
+uint8_t a[] = {1, 1, 255}; //Designate Color of strip0
+uint8_t b[] = {255,1,1};
+uint8_t c[] = {1,255,1};
+
+const uint8_t clear_led[4] = {255, 255, 255};
+const uint8_t clear_bright = 0;
+
+void setup() {
+setupPixels(&pixel_1);
+Serial.begin(9600);
+timer_1 = millis();
+timer_2 = timer_1;
+
+pinMode(lightSense,INPUT_PULLUP);
+Serial.println("Setup Complete");
+}
+
+void loop() {
+unsigned long now = millis();
+
+if(!digitalRead(lightSense))
+{
+  flashEffect();
+  }
+else
+  if(timer_3 <= delay_3){
+    Merica();
+    timer_3 = now;
+  }
+  if(timer_4 <= delay_4){
+    rainbow(&pixel_1, 10);
+    timer_4 = now;
+  }
+  now = millis();
+}
+
+void setupPixels(Adafruit_NeoPixel *obj) {
+  obj->begin();
+  obj->setBrightness(0);
+  obj->show();
+}
+ 
+// Fill the dots one after the other with a color
+void setPColor(Adafruit_NeoPixel *obj, const uint8_t *ary, const uint8_t brightness) {
+  obj->setBrightness(brightness);
+  for(uint8_t i=0; i < obj->numPixels(); i++) {
+      obj->setPixelColor(i, obj->Color(ary[0], ary[1], ary[2], ary[3]));
+      obj->show();
+  }
+}
+ 
+void rainbow(Adafruit_NeoPixel *obj, uint8_t wait) {
+  uint16_t i, j;
+  for(j=0; j<256; j++) {
+    for(i=0; i < obj->numPixels(); i++) {
+      obj->setPixelColor(i, Wheel(obj, (i+j) & 255));
+    }
+    obj->setBrightness(modBrightness);
+    obj->show();
+    delay(wait);
+    dynamicBrightness();
+  }
+}
+
+void dynamicBrightness() {
+  if (!brightnessDir)
+    modBrightness++;
+  else
+    modBrightness--;
+  if (modBrightness == MAXBRIGHTNESS || modBrightness == MINBRIGHTNESS)
+    brightnessDir = !brightnessDir;
+}
+
+ 
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(Adafruit_NeoPixel *obj, byte WheelPos) {
+  if(WheelPos < 85) {
+   return obj->Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   return pixel_1.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  } else {
+   WheelPos -= 170;
+   return obj->Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+}
+void flashEffect(){
+  const long now = millis();
+  if(timer_1 - now > delay_1){ 
+  setPColor(&pixel_1, a, 50);
+  timer_1 = now;
+  }
+  if(timer_2 - now > delay_2){
+  setPColor(&pixel_1, clear_led,clear_bright);
+  timer_2 = now;
+  }
+}
+void Merica(){
+  const long now = millis();
+  if(timer_1 - now > delay_1){
+    setPColor(&pixel_1,b,255);
+    timer_1 = now;
+  }
+  if(timer_2 - now > delay_2){
+    setPColor(&pixel_1,a,255);
+    timer_2 = now;
+  }
+}
