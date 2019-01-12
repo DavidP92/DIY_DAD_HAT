@@ -8,7 +8,7 @@
 #define LED_PIN  1 // are connected to this DIGITAL pin #
 #define lightSense 2  // Light sensor to this DIGITAL pin #
 
-#define MAXBRIGHTNESS 30
+#define MAXBRIGHTNESS 155
 #define MINBRIGHTNESS 0
 uint8_t modBrightness = 0;
 bool brightnessDir = false;
@@ -20,14 +20,18 @@ unsigned long timer_2;
 unsigned long timer_3;
 unsigned long timer_4;
 
-uint16_t delay_1 = 50;
-uint16_t delay_2 = 100;
+uint16_t delay_1 = 250;
+uint16_t delay_2 = 1000;
 uint16_t delay_3 = 10000;
 uint16_t delay_4 = 20000; 
 
 uint8_t a[] = {1, 1, 255}; //Designate Color of strip0
 uint8_t b[] = {255,1,1};
-uint8_t c[] = {1,255,1};
+uint8_t c[] = {255,255,255};
+uint8_t d[] = {255,1,155};
+uint8_t e[] = {155,1,255};
+uint8_t f[] = {1,255,155};
+uint8_t g[] = {155,255,1};
 
 const uint8_t clear_led[4] = {255, 255, 255};
 const uint8_t clear_bright = 0;
@@ -45,22 +49,19 @@ Serial.println("Setup Complete");
 void loop() {
 unsigned long now = millis();
 
-if(!digitalRead(lightSense))
-{
-  flashEffect();
-  }
-else
-  if(timer_3 <= delay_3){
-    Merica();
-    timer_3 = now;
-  }
-  if(timer_4 <= delay_4){
-    rainbow(&pixel_1, 10);
-    timer_4 = now;
-  }
-  now = millis();
+for(int x = 0; x < 20;x++){
+ flashEffect(&pixel_1,250); 
+ Serial.print("[1]");
 }
-
+for(int x = 0; x < 20;x++){
+  Merica(&pixel_1,500);
+ Serial.print("[2]");
+}
+for(int x = 0; x < 5;x++){
+  rainbow(&pixel_1,10);
+  Serial.print("[3]");
+}
+}
 void setupPixels(Adafruit_NeoPixel *obj) {
   obj->begin();
   obj->setBrightness(0);
@@ -112,25 +113,44 @@ uint32_t Wheel(Adafruit_NeoPixel *obj, byte WheelPos) {
    return obj->Color(0, WheelPos * 3, 255 - WheelPos * 3);
   }
 }
-void flashEffect(){
+void flashEffect(Adafruit_NeoPixel *obj,uint8_t wait){
   const long now = millis();
-  if(timer_1 - now > delay_1){ 
-  setPColor(&pixel_1, a, 50);
-  timer_1 = now;
-  }
-  if(timer_2 - now > delay_2){
+   
+  setPColor(&pixel_1, d, 155);
+  obj->show();
+  delay(wait);
   setPColor(&pixel_1, clear_led,clear_bright);
-  timer_2 = now;
-  }
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1, e, 155);
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1, clear_led,clear_bright);
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1, f, 155);
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1, clear_led,clear_bright);
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1,g, 155);
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1, clear_led,clear_bright);
+  obj->show();
+  delay(wait);
 }
-void Merica(){
+void Merica(Adafruit_NeoPixel *obj,uint8_t wait){
   const long now = millis();
-  if(timer_1 - now > delay_1){
-    setPColor(&pixel_1,b,255);
-    timer_1 = now;
-  }
-  if(timer_2 - now > delay_2){
-    setPColor(&pixel_1,a,255);
-    timer_2 = now;
-  }
+  
+  setPColor(&pixel_1,b,155);
+  obj->show(); 
+  delay(wait);
+  setPColor(&pixel_1,a,155);
+  obj->show();
+  delay(wait);
+  setPColor(&pixel_1,c,155);
+  obj->show();
+  delay(wait);
 }
